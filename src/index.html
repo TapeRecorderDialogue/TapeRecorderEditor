@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Tape Json Editor</title>
+    </head>
+
+    <body>
+
+        <!-- templates -->
+        <!-- <div data-bind="template: { name: 'nodeElementTemplate', data: elementData }"></div> -->
+        <!-- <div data-bind="class: nodeElement"></div> -->
+
+        <!-- app -->
+        <div id="app">
+
+            <!-- old display with nodes -->
+
+            <!-- <div class="all-nodes">
+                <div class="node" data-bind="foreach: { data: sets, as: 'node' }">
+                    <div class="node-element" data-bind="contentEditable: node.editable(), text: node.id"></div>
+                    <div class="node" data-bind="foreach: { data: node.children, as: 'childnode' }">
+                        <div class="node-element" data-bind="contentEditable: childnode.editable(), text: childnode.id"></div>
+                        <div class="node" data-bind="foreach: { data: childnode.children, as: 'grandchildnode' }">
+                            <div><b><span class="node-element" data-bind="contentEditable: grandchildnode.editable(), text: grandchildnode.values.sayer"></span> says: </b><span class="node-element" data-bind="contentEditable: grandchildnode.editable(), text: grandchildnode.values.words"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+
+            <!-- Set and conversation tree -->
+
+            <div class="tree">
+                <div class="all-nodes">
+                    <div class="node" data-bind="foreach: { data: allNodes, as: 'set' }">
+                        <!-- <div class="node-id" data-bind="contentEditable: set.editable(), textInput: set.id"></div> -->
+                        <div class="node-id">
+                            <input data-bind="visible: set.editable(), textInput: set.id"></input>
+                            <span data-bind="hidden: set.editable(), text: set.id"></span>
+                        </div>
+
+
+                        <div class="node" data-bind="foreach: { data: set.values.conversations, as: 'conv'}">
+                           <!-- <div class="node-id" data-bind="contentEditable: conv.editable(), textInput: conv.id"></div> -->
+                            <div class="node-id">
+                                <input data-bind="visible: conv.editable(), textInput: conv.id"></input>
+                                <span data-bind="hidden: conv.editable(), text: conv.id"></span>
+                            </div>
+
+                      </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Save/Load buttons -->
+
+            <div id="save-load-buttons">
+                <button id="save-file-button">Save File</button>
+                <button id="load-file-button">Load File</button>
+                <input id="file-input" type="file" name="name" style="display: none"></input>
+                <div></div>
+            </div>
+        </div>
+
+        
+
+    </body>
+</html>
+
+<!-- <div class="conversationSet">
+    <div class="conv-set-title" data-bind="text: node.id"></div>
+    <div class="node" data-bind="foreach: {data: node.conversations, as: 'conversation'}">
+        <div class="conv-title" data-bind="text: conversation.id"></div>
+        <div class="node" data-bind="foreach: {data: conversation.lines, as: 'line'}">
+            <div><b><span data-bind="text: line.sayer"></span>: </b><span data-bind="text: line.words"></span></div>
+        </div>
+    </div>
+</div> -->
