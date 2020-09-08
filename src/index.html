@@ -29,7 +29,7 @@
 
             <!-- Set and conversation tree -->
 
-            <div class="tree">
+            <div id="tree">
                 <div class="all-nodes">
                     <div class="node" data-bind="foreach: { data: allNodes, as: 'set' }">
                         <!-- <div class="node-id" data-bind="contentEditable: set.editable(), textInput: set.id"></div> -->
@@ -41,7 +41,7 @@
 
                         <div class="node" data-bind="foreach: { data: set.values.conversations, as: 'conv'}">
                            <!-- <div class="node-id" data-bind="contentEditable: conv.editable(), textInput: conv.id"></div> -->
-                            <div class="node-id">
+                            <div class="node-id conversation-node">
                                 <input data-bind="visible: conv.editable(), textInput: conv.id"></input>
                                 <span data-bind="hidden: conv.editable(), text: conv.id"></span>
                             </div>
@@ -60,9 +60,22 @@
                 <input id="file-input" type="file" name="name" style="display: none"></input>
                 <div></div>
             </div>
-        </div>
 
-        
+            <!-- Conversation display (lines) -->
+
+            <div id="conv-details">
+                <div data-bind="if: visibleConversation">
+                    <h3 data-bind="text: visibleConversation.id"></h3>
+                    <div data-bind="foreach: { data: visibleConversation().values.lines, as: 'line' }">
+                        <p>
+                            <b><span data-bind="text: line.values.sayer"></span> : </b>
+                            <span data-bind="text: line.values.words"></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>      
 
     </body>
 </html>

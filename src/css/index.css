@@ -8,12 +8,13 @@
     display: none;
 }
 
-.all-nodes {
-    position: absolute;
+#tree {
+    position: fixed;
     overflow: hidden;
-    width: 100%;
+    width: 50%;
     height: 100%;
-    margin-top: 24px;
+    margin-top: 28px;
+    left: 0;
 }
 
 .node {
@@ -23,4 +24,11 @@
     height: 200px;
     background: #fff;
     cursor: default;
+}
+
+#conv-details {
+    position: fixed;
+    width: 50%;
+    height: 100%;
+    right: 0;
 }

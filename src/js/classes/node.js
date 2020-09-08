@@ -26,7 +26,7 @@ export var Node = function(type = null, id = null){
     this.editable = ko.observable(false)
 
     this.setDataFromConversationSet = function(set){
-        if(type !== 'conv-set') return
+        if(self.type() !== 'conv-set') throw 'Node is of type ' + self.type() + ', not conv-set'
 
         self.id(set.id)
         var convs = set.conversations.slice()
@@ -39,11 +39,14 @@ export var Node = function(type = null, id = null){
             //for every line in conversation
             for(var j = 0; j < lines.length; j++){
                 var lineNode = new Node('line')
-                lineNode.values.sayer(lines[i].sayer)
-                lineNode.values.words(lines[i].words)
-                convNode.values.lines().push(lineNode)
+                lineNode.values.sayer(lines[j].sayer)
+                lineNode.values.words(lines[j].words)
+                // convNode.values.lines().push(lineNode)
+                convNode.values.lines()[j] = lineNode
+                // console.log(j + `: ${lines[j].sayer} says ${lines[j].words}`)
             }
-            self.values.conversations().push(convNode)
+            // self.values.conversations().push(convNode)
+            self.values.conversations()[i] = convNode
         }      
 
     }

@@ -128,6 +128,9 @@ export const data = {
             //fill app.allNodes from sets
             this.makeNodesFromSets()
 
+            //clear visibleConversation 
+            this.app.visibleConversation(null)
+
         }
         reader.readAsText(file, 'UTF-8')
         this.editingPath = file.path
