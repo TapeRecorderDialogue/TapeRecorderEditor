@@ -18,6 +18,9 @@ export var App = function(name, version){
     //the current conversation being viewed
     this.visibleConversation = ko.observable()
 
+    //the current node being edited
+    this.editingNode = null
+
 
     //<test code>
 
@@ -45,10 +48,16 @@ export var App = function(name, version){
 
         //double click: allow editing of name of node
         //single click: set current conversation    
-        $(document).on('dblclick', '.node-id', function(){
+        $(document).on('dblclick', '.editable-node-display', function(){
+            $('.editable-node-input').trigger('blur')
+            self.editingNode = $(this).parents('.editable-node')[0]
             ko.dataFor(this).editable(true)
+            setTimeout(function(){$(self.editingNode).find('.editable-node-input').trigger('focus')})
         })
-        $(document).on('blur', '.node-id', function(){
+        $(document).on('blur', '.editable-node-input', function(){
+            if(self.editingNode === $(this).parents('editable-node')[0]){
+                self.editingNode = null
+            }
             ko.dataFor(this).editable(false)
         })
         $(document).on('click', '.conversation-node', function(){

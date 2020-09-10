@@ -7,8 +7,21 @@
     <body>
 
         <!-- templates -->
-        <!-- <div data-bind="template: { name: 'nodeElementTemplate', data: elementData }"></div> -->
-        <!-- <div data-bind="class: nodeElement"></div> -->
+        <script type="text/html" id="editable-node-id-template">
+            <span data-bind="if: editable()"><input class="editable-node-input" data-bind="textInput: id"></input></span>
+            <span data-bind="ifnot: editable()"><span class="editable-node-display" data-bind="text: id"></span></span>
+        </script>
+
+        <script type="text/html" id="editable-node-line-template">
+            <tr class="editable-node" data-bind="if: editable()">
+                <td class="editable-node-input"><input data-bind="textInput: values.sayer"></input></td>
+                <td class="editable-node-input"><input data-bind="textInput: values.words"></input></td>
+            </tr>
+            <tr class="editable-node" data-bind="ifnot: editable()">
+                <td class="editable-node-display"><b><span data-bind="text: values.sayer"></span> : </b></td>
+                <td class="editable-node-display"><span data-bind="text: values.words"></span></td>
+            </tr>
+        </script>
 
         <!-- app -->
         <div id="app">
@@ -33,18 +46,11 @@
                 <div class="all-nodes">
                     <div class="node" data-bind="foreach: { data: allNodes, as: 'set' }">
                         <!-- <div class="node-id" data-bind="contentEditable: set.editable(), textInput: set.id"></div> -->
-                        <div class="node-id">
-                            <input data-bind="visible: set.editable(), textInput: set.id"></input>
-                            <span data-bind="hidden: set.editable(), text: set.id"></span>
-                        </div>
-
+                        <div class="editable-node" data-bind="template: { name: 'editable-node-id-template', data: set }"></div>
 
                         <div class="node" data-bind="foreach: { data: set.values.conversations, as: 'conv'}">
                            <!-- <div class="node-id" data-bind="contentEditable: conv.editable(), textInput: conv.id"></div> -->
-                            <div class="node-id conversation-node">
-                                <input data-bind="visible: conv.editable(), textInput: conv.id"></input>
-                                <span data-bind="hidden: conv.editable(), text: conv.id"></span>
-                            </div>
+                            <div class="editable-node conversation-node" data-bind="template: { name: 'editable-node-id-template', data: conv }"></div>
 
                       </div>
                     </div>
@@ -63,16 +69,19 @@
 
             <!-- Conversation display (lines) -->
 
-            <div id="conv-details">
-                <div data-bind="if: visibleConversation">
-                    <h3 data-bind="text: visibleConversation.id"></h3>
-                    <div data-bind="foreach: { data: visibleConversation().values.lines, as: 'line' }">
-                        <p>
-                            <b><span data-bind="text: line.values.sayer"></span> : </b>
-                            <span data-bind="text: line.values.words"></span>
-                        </p>
-                    </div>
-                </div>
+            <div id="conv-details" data-bind="if: visibleConversation()">
+                <table class="conv-table">
+                    <thead>
+                        <tr>
+                            <td><i>Sayer</i></td>
+                            <td><i>Words</i></td>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="template: { name: 'editable-node-line-template', foreach: visibleConversation().values.lines }">
+                        <!-- <div data-bind="template: { name: 'editable-node-line-template', foreach: visibleConversation().values.lines }"></div> -->
+                    </tbody>
+                    
+                </table>
             </div>
 
         </div>      

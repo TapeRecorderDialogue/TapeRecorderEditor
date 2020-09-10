@@ -18,7 +18,7 @@ export var Node = function(type = null, id = null){
         conversations: ko.observableArray([]),
         //for conv only
         lines: ko.observableArray([]),
-        //for line only
+        //for line only TODO: Put these in child nodes of line as the id
         sayer: ko.observable(),
         words: ko.observable()
 

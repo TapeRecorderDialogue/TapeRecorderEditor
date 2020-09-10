@@ -32,3 +32,17 @@
     height: 100%;
     right: 0;
 }
+
+.conv-table {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    border-collapse: collapse;
+}
+
+.conv-table td, th {
+    border: thin, solid, #dddddd;
+    padding: 8px;
+}
+
+.conv-table tr:nth-child(even){
+    background-color: #dddddd;
+}
