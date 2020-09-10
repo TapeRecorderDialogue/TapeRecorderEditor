@@ -1,0 +1,48 @@
+#app {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    cursor: default;
+    display: none;
+}
+
+#tree {
+    position: fixed;
+    overflow: hidden;
+    width: 50%;
+    height: 100%;
+    margin-top: 28px;
+    left: 0;
+}
+
+.node {
+    margin-left: 20px;
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: #fff;
+    cursor: default;
+}
+
+#conv-details {
+    position: fixed;
+    width: 50%;
+    height: 100%;
+    right: 0;
+}
+
+.conv-table {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    border-collapse: collapse;
+}
+
+.conv-table td, th {
+    border: thin, solid, #dddddd;
+    padding: 8px;
+}
+
+.conv-table tr:nth-child(even){
+    background-color: #dddddd;
+}
