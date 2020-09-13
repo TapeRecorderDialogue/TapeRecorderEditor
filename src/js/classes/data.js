@@ -1,8 +1,7 @@
 const path = require('path')
 const saveAs = require('file-saver')
 
-import {Conversation, Line, ConversationSet} from './objects'
-import { Node } from './node'
+import { nodeArrayFromJsonObject, Node } from './node'
 
 // var blob = new Blob(["Hello, world!"], {type: "text/plain;charset=utf-8"});
 // saveAs(blob, "asdfasdf.txt")
@@ -27,7 +26,7 @@ export const data = {
             data.loadFile()
         })
         $("#save-file-button").on('click', function(){
-            data.saveToJson()
+            data.saveNodeArrayToJson(data.app.allNodes())
         })
         
     },
@@ -45,69 +44,119 @@ export const data = {
         this.saveJsonToFile(ko.toJSON(obj))
     },
 
-    //save work, no dialog
-    saveToJson: function(){
-        this.applyChangesFromAllNodes()
-
-        //if the file has not been saved, create new file
-        if(this.editingPath === undefined){
-            // console.log(data.app.sets[0].id)
-            this.saveObservableToFile(data.app.sets)
-            return
+    saveWithMeta: function(obj){
+        let s = {
+            meta: data.app.meta,
+            nodes: obj
         }
-
-        //otherwise write to the existing file
-        data.app.fs.writeFile(this.editingPath, this.getSaveData(), { encoding: 'utf-8' }, function(err){
-            if(err) alert('Could not save data to ' + editingPath)
-        })
+        this.saveJsonToFile(JSON.stringify(s))
     },
 
-    getSaveData: function(){
-        return JSON.stringify(data.app.sets)
-    },
+    //JSON.stringify and save, except without the unneeded data.
+    //ex: conv-set Nodes do not need lineValues
+    saveNodeArrayToJson: function(arr){
+        var nodes = []
 
-    //move required data from app.allNodes to app.sets
-    applyChangesFromAllNodes: function(){
-        this.makeSetsFromNodes(data.app.allNodes(), data.app.sets)
-    },
+        for(var i = 0; i < arr.length; i++){
+            var set = arr[i]
+            var setNode = {}
+            setNode.id = set.id()
+            setNode.conversations = []
 
-    makeSetsFromNodes: function(nodes, out = []){
-        var contents = []
-        let allNodes = nodes
-
-        for(var i = 0; i < allNodes.length; i++){
-            let convSetNode = allNodes[i]
-            let convSet = new ConversationSet(convSetNode.id())
-
-            var convs = convSetNode.values.conversations()
-
-            for(var j = 0; j < convs.length; j++){
-                let convNode = convs[j]
-                let conv = new Conversation(convNode.id())
-
-                var lines = convNode.values.lines()
-
-                for(var k = 0; k < lines.length; k++){
-                    let lineNode = lines[k]
-                    let line = new Line(lineNode.values.sayer(), lineNode.values.words())
-                    conv.addLine(line)
+            var setConvs = set.conversations()
+            for(var j = 0; j < setConvs.length; j++){
+                var conv = setConvs[j]
+                var convNode = {}
+                convNode.id = conv.id()
+                convNode.lines = []
+                
+                var convLines = conv.lines()
+                for(var k = 0; k < convLines.length; k++){
+                    var line = convLines[k]
+                    var lineNode = {}
+                    lineNode.lineValues = {}
+        
+                    for(const [key, value] of Object.entries(line.lineValues)){
+                        if(data.app.meta.lineValues[key] == null) throw `Key ${key} is invalid. Check that metadata contains it.`
+                        lineNode.lineValues[key] = value()
+                    }
+    
+                    convNode.lines.push(lineNode)
                 }
-
-                convSet.addConversation(conv)
+    
+                setNode.conversations.push(convNode)
             }
-
-            contents.push(convSet)
-            // convSet.setConversations(convSetNode.values.conversations())
+    
+            nodes.push(setNode)
         }
 
-        //clear array
-        out.splice(0, out.length)
-
-        for(var i = 0; i < contents.length; i++){
-            out.push(contents[i])
-        }
-        if(out[0] === null) out.shift()
+        this.saveWithMeta(nodes)
     },
+
+    // //save work, no dialog
+    // saveToJson: function(){
+    //     this.applyChangesFromAllNodes()
+
+    //     this.saveWithMeta(data.app.sets)
+
+    //     //if the file has not been saved, create new file
+    //     // if(this.editingPath === undefined){
+    //     //     this.saveObservableToFile(data.app.sets)
+    //     //     return
+    //     // }
+
+    //     // //otherwise write to the existing file
+    //     // data.app.fs.writeFile(this.editingPath, this.getSaveData(), { encoding: 'utf-8' }, function(err){
+    //     //     if(err) alert('Could not save data to ' + editingPath)
+    //     // })
+    // },
+
+    // getSaveData: function(){
+    //     return JSON.stringify(data.app.sets)
+    // },
+
+    // //move required data from app.allNodes to app.sets
+    // applyChangesFromAllNodes: function(){
+    //     this.makeSetsFromNodes(data.app.allNodes(), data.app.sets)
+    // },
+
+    // makeSetsFromNodes: function(nodes, out = []){
+    //     var contents = []
+    //     let allNodes = nodes
+
+    //     for(var i = 0; i < allNodes.length; i++){
+    //         let convSetNode = allNodes[i]
+    //         let convSet = new ConversationSet(convSetNode.id())
+
+    //         var convs = convSetNode.values.conversations()
+
+    //         for(var j = 0; j < convs.length; j++){
+    //             let convNode = convs[j]
+    //             let conv = new Conversation(convNode.id())
+
+    //             var lines = convNode.values.lines()
+
+    //             for(var k = 0; k < lines.length; k++){
+    //                 let lineNode = lines[k]
+    //                 let line = new Line(lineNode.values.sayer(), lineNode.values.words())
+    //                 conv.addLine(line)
+    //             }
+
+    //             convSet.addConversation(conv)
+    //         }
+
+    //         contents.push(convSet)
+    //         // convSet.setConversations(convSetNode.values.conversations())
+    //     }
+
+    //     //clear array
+    //     out.splice(0, out.length)
+
+    //     for(var i = 0; i < contents.length; i++){
+    //         out.push(contents[i])
+    //     }
+    //     if(out[0] === null) out.shift()
+    // },
 
 
     loadFile: function(){
@@ -117,16 +166,28 @@ export const data = {
         var reader = new FileReader()
         reader.onload = e =>{
             // this.loadNodeFromJson(e.target.result)
-            let j = JSON.parse(e.target.result)
-            for(var i = 0; i < j.length; i++){
-                this.loadedSets.push(j[i])
-            }
-            
-            //fill app.sets
-            this.loadSetsFromLoaded(data.app.sets)
+            var json = JSON.parse(e.target.result)
 
-            //fill app.allNodes from sets
-            this.makeNodesFromSets()
+            var arr = nodeArrayFromJsonObject(json)
+
+            //load meta
+            data.app.meta = json.meta
+
+            //clear and load nodes
+            data.app.allNodes.removeAll()
+            for(var i = 0; i < arr.length; i++){
+                data.app.allNodes.push(arr[i])
+            }
+
+            // for(var i = 0; i < json.nodes.length; i++){
+            //     this.loadedSets.push(j[i])
+            // }
+            
+            // //fill app.sets
+            // this.loadSetsFromLoaded(data.app.sets)
+
+            // //fill app.allNodes from sets
+            // this.makeNodesFromSets()
 
             //clear visibleConversation 
             this.app.visibleConversation(null)
@@ -146,21 +207,21 @@ export const data = {
         if(out[0] === null) out.shift()
     },
 
-    makeNodesFromSets: function(){
-        //clear allNodes
-        data.app.allNodes.removeAll()
-        //push
-        // data.app.sets.forEach(set => function(){
-        //     var n = new Node('conv-set')
-        //     n.setDataFromConversationSet(set)
-        //     data.app.allNodes().push(n)
-        // })
-        let temp = []
-        for(var i = 0; i < data.app.sets.length; i++){
-            var n = new Node('conv-set')
-            n.setDataFromConversationSet(data.app.sets[i])
-            temp.push(n)
-        }
-        data.app.allNodes(temp)
-    }
+    // makeNodesFromSets: function(){
+    //     //clear allNodes
+    //     data.app.allNodes.removeAll()
+    //     //push
+    //     // data.app.sets.forEach(set => function(){
+    //     //     var n = new Node('conv-set')
+    //     //     n.setDataFromConversationSet(set)
+    //     //     data.app.allNodes().push(n)
+    //     // })
+    //     let temp = []
+    //     for(var i = 0; i < data.app.sets.length; i++){
+    //         var n = new Node('conv-set')
+    //         n.setDataFromConversationSet(data.app.sets[i])
+    //         temp.push(n)
+    //     }
+    //     data.app.allNodes(temp)
+    // }
 }

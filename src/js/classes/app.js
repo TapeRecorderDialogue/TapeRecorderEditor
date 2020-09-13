@@ -1,5 +1,4 @@
 import { data } from './data'
-import {Conversation, Line, ConversationSet} from './objects'
 import { Node } from './node'
 
 export var App = function(name, version){
@@ -8,12 +7,23 @@ export var App = function(name, version){
     this.name = ko.observable(name)
     this.data = data
 
-    //all nodes, which contains conv-set/conv/line and other values. Used for knockout/display. Is created from sets when a json file is loaded, is where changes are stored until save.
-    //data from allNodes is stored into app.sets, with information that isn't important removed
+    //Array of all nodes (conv-sets/convs/lines)
     this.allNodes = ko.observableArray([])
 
-    //all the conversation sets. This is what is saved/loaded
-    this.sets = []
+    // metadata
+    this.meta = {
+        // the variables that a line stores, defaults to (sayer + words)
+        // key: name
+        // value: "string/bool/number"
+        lineValues: {sayer: "string", words: "string"},
+
+        // order that linevalues are displayed
+        lineValuesOrder: ["sayer", "words"],
+
+        // whether or not lineValues can be changed (add/remove a value)
+        // make false to lock in the lineValues as to not accidently change them
+        lineValuesChangeable: true
+    }
 
     //the current conversation being viewed
     this.visibleConversation = ko.observable()
@@ -24,27 +34,66 @@ export var App = function(name, version){
 
     //<test code>
 
-    let testSet = new ConversationSet("Set2")
-    let l = new Line("Person", "Hello world")
-    let l2 = new Line("Person2", "asdf")
-    let c = new Conversation("Conv 1", [l, l2])
-    testSet.addConversation(c)
-    self.sets.push(testSet)
-    console.log("in app, " + testSet.conversations[0].lines[1].sayer)
+    let n1 = new Node('conv-set', 'Set1')
+    n1.conversations.push(new Node('conv', 'Conv 1'))
+    let l1 = new Node('line')
+    l1.lineValues.sayer = ko.observable("Person")
+    l1.lineValues.words = ko.observable("Hello")
+    n1.conversations()[0].lines.push(l1)
 
-    let n = new Node('conv-set')
-    n.setDataFromConversationSet(this.sets[0])
-
-    self.allNodes().push(n)
+    self.allNodes.push(n1)
 
     //</>
+
+
+
+    this.setupCustomBindingHandlers = function(){
+        // ko.bindingHandlers.lineNode = {
+        //     init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+        //         var value = valueAccessor()
+        //         var unwrappedValue = ko.unwrap(value)
+
+        //         allBindings.bind("with", "$data")
+                
+        //         alert('init')
+
+        //         for(const key of Object.keys(self.meta.lineValues)){
+        //             //make a new table entry
+        //             var $new = document.createElement("td")
+        //             $new.className = "editable-node-input"
+        //             console.log(unwrappedValue)
+        //             console.log(bindingContext.$data)
+        //             $(element).append($new)
+        //             $new.setAttribute("data-bind", `textInput: $data.lineValues.${key}`)
+        //             ko.applyBindings(self, $($new)[0]);
+        //         }
+                
+        //     },
+        //     update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+        //         // var value = valueAccessor()
+        //         // var unwrappedValue = ko.unwrap(value)
+        //         // alert('update')
+        //         // for(const key of Object.keys(self.meta.lineValues)){
+        //         //     //make a new table entry
+        //         //     var $new = document.createElement("td")
+        //         //     $new.className = "editable-node-input"
+        //         //     $new.setAttribute("data-bind", "textInput: $data().lineValues." + key)
+        //         //     $(element).append($new)
+        //         // }
+
+        //     }
+        // }
+        // console.log("added bindings " )
+    }
 
     this.run = function(){
 
         data.app = self
         data.app.allNodes = self.allNodes
-        data.app.sets = self.sets
         data.doSetup()
+
+        self.setupCustomBindingHandlers()
+
 
         //double click: allow editing of name of node
         //single click: set current conversation    
@@ -61,10 +110,18 @@ export var App = function(name, version){
             ko.dataFor(this).editable(false)
         })
         $(document).on('click', '.conversation-node', function(){
-            console.log(ko.dataFor(this).id())
             self.visibleConversation(ko.dataFor(this))
             // self.visibleConversation = ko.dataFor(this)
         })
+
+        //expand/collapse
+        $(document).on('click','.expand-collapse', function(){
+            let ex = ko.dataFor(this).expanded
+            $(this).removeClass(ex() ? 'collapse' : 'expand')
+            $(this).addClass(ex() ? 'expand' : 'collapse')
+            ex(!ex())
+        })
+        $('.expand-collapse').addClass('collapse')
 
 
         $('#app').show()

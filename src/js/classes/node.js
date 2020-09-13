@@ -5,7 +5,8 @@ import { toJS } from "knockout"
 // Contains conversation, conversationset, and line objects
 // conv-set: id (string), conversations (conv[])
 // conv: id (string), lines (line[])
-// line: words (string), sayer (string)
+// line: lineValues (custom vars)
+
 
 export var Node = function(type = null, id = null){
     const self = this
@@ -13,17 +14,22 @@ export var Node = function(type = null, id = null){
     //type, default to line
     this.type = ko.observable((type === 'conv-set') ? 'conv-set' : ((type === 'conv') ? 'conv' : 'line'))
     this.id = ko.observable(id)
-    this.values = {
-        //for conv-set only
-        conversations: ko.observableArray([]),
-        //for conv only
-        lines: ko.observableArray([]),
-        //for line only TODO: Put these in child nodes of line as the id
-        sayer: ko.observable(),
-        words: ko.observable()
 
+    //for conv-set only
+    this.conversations = ko.observableArray([]),
+    //for conv only
+    this.lines = ko.observableArray([]),
+    //for line only
+    this.lineValues = {
+        // sayer: ko.observable(),
+        // words: ko.observable(),
     }
+    
+    // id can be edited? (for conv/conv-set only)
     this.editable = ko.observable(false)
+    
+    // show children? (conv/conv-set only)
+    this.expanded = ko.observable(true)
 
     this.setDataFromConversationSet = function(set){
         if(self.type() !== 'conv-set') throw 'Node is of type ' + self.type() + ', not conv-set'
@@ -41,9 +47,7 @@ export var Node = function(type = null, id = null){
                 var lineNode = new Node('line')
                 lineNode.values.sayer(lines[j].sayer)
                 lineNode.values.words(lines[j].words)
-                // convNode.values.lines().push(lineNode)
                 convNode.values.lines()[j] = lineNode
-                // console.log(j + `: ${lines[j].sayer} says ${lines[j].words}`)
             }
             // self.values.conversations().push(convNode)
             self.values.conversations()[i] = convNode
@@ -135,4 +139,36 @@ export var Node = function(type = null, id = null){
     //         // || (valueName === 'lines' && self.isType('conv'))
     //         || ((valueName === 'words' || valueName === 'sayer') && self.isType('line'))
     // }
+}
+
+// create Node tree from deserialized json, including metadata
+export var nodeArrayFromJsonObject = function(obj){
+    var tree = []
+
+    for(var i = 0; i < obj.nodes.length; i++){
+        var set = obj.nodes[i]
+        var setNode = new Node('conv-set', set.id)
+
+        for(var j = 0; j < set.conversations.length; j++){
+            var conv = set.conversations[j]
+            var convNode = new Node('conv', conv.id)
+
+            for(var k = 0; k < conv.lines.length; k++){
+                var line = conv.lines[k]
+                var lineNode = new Node('line')
+    
+                for(const [key, value] of Object.entries(line.lineValues)){
+                    lineNode.lineValues[key] = ko.observable(value)
+                }
+
+                convNode.lines.push(lineNode)
+            }
+
+            setNode.conversations.push(convNode)
+        }
+
+        tree.push(setNode)
+    }
+
+    return tree
 }
