@@ -1,4 +1,5 @@
 #app {
+    font-family: Inconsolata, Monaco, Consolas, 'Courier New', Courier, monospace;
     position: absolute;
     top: 0px;
     left: 0px;
@@ -24,6 +25,25 @@
     height: 200px;
     background: #fff;
     cursor: default;
+    display: block
+}
+
+.editable-node {
+    display: inline-block;
+}
+
+.expand, .collapse {
+    cursor: pointer;
+    margin-left: -20px;
+    min-width: 20px;
+}
+
+.expand::before {
+    content: '\25BA';
+}
+
+.collapse::before {
+    content: '\25BC'
 }
 
 #conv-details {
@@ -34,15 +54,22 @@
 }
 
 .conv-table {
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
     border-collapse: collapse;
 }
 
-.conv-table td, th {
-    border: thin, solid, #dddddd;
+.conv-table thead {
+    background-color: #fff
+}
+
+.conv-table tbody td, th {
+    border: 1px solid #dddddd;
     padding: 8px;
 }
 
-.conv-table tr:nth-child(even){
+.conv-table tbody tr:nth-child(odd){
     background-color: #dddddd;
+}
+
+input {
+    font-family: Inconsolata, Monaco, Consolas, 'Courier New', Courier, monospace;
 }
