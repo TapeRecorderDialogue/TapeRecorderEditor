@@ -20,16 +20,18 @@
 
 .node {
     margin-left: 20px;
-    position: absolute;
-    width: 200px;
-    height: 200px;
     background: #fff;
+    width: 100%;
     cursor: default;
-    display: block
 }
 
 .editable-node {
-    display: inline-block;
+    /* display: block; */
+    cursor: pointer;
+}
+
+.expand-collapse {
+    width: 20px;
 }
 
 .expand, .collapse {
@@ -46,6 +48,21 @@
     content: '\25BC'
 }
 
+.add-node {
+    position: relative;
+    display: block;
+    clear: both;
+    overflow: visible;
+    margin-left: 20px;
+    padding-bottom: 20px;
+    color: #18bb18;
+    cursor: pointer;
+}
+
+.add-node::before {
+    content: '+';
+}
+
 #conv-details {
     position: fixed;
     width: 50%;
@@ -54,7 +71,7 @@
 }
 
 .conv-table {
-    border-collapse: collapse;
+    border-collapse: separate;
 }
 
 .conv-table thead {
