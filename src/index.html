@@ -8,8 +8,8 @@
 
         <!-- templates -->
         <script type="text/html" id="editable-node-id-template">
-            <span data-bind="if: editable()"><input class="editable-node-input" data-bind="textInput: id"></input></span>
-            <span data-bind="ifnot: editable()"><span class="editable-node-display" data-bind="text: id"></span></span>
+            <span data-bind="if: editable()"><input class="editable-node-input" data-bind="textInput: id, style: { 'background-color': hasError() ? '#ff3333' : 'initial'}"></input></span>
+            <span data-bind="ifnot: editable()"><span class="editable-node-display" data-bind="text: id, style: { 'background-color': hasError() ? '#ff3333' : 'initial'}"></span></span>
         </script>
 
         <!-- <script type="text/html" id="editable-node-line-template">
@@ -46,15 +46,24 @@
                 <div class="all-nodes">
                     <div class="node" data-bind="foreach: { data: allNodes, as: 'set' }">
                         <!-- <div class="node-id" data-bind="contentEditable: set.editable(), textInput: set.id"></div> -->
-                        <div class="editable-node expand-collapse"></div>
-                        <div class="editable-node" data-bind="template: { name: 'editable-node-id-template', data: set }"></div>
+                        <span class="expand-collapse"></span>
+                        <span class="editable-node" data-bind="template: { name: 'editable-node-id-template', data: set }"></span>
 
                         <div class="node" data-bind="visible: set.expanded(), foreach: { data: set.conversations, as: 'conv'}">
                            <!-- <div class="node-id" data-bind="contentEditable: conv.editable(), textInput: conv.id"></div> -->
-                            <div class="editable-node conversation-node" data-bind="visible: set.expanded(), template: { name: 'editable-node-id-template', data: conv }"></div>
+                            <div class="editable-node conversation-node" data-bind="visible: set.expanded(), template: { name: 'editable-node-id-template', data: conv }"></div>                          
 
-                      </div>
+                        </div>
+
+                        <div class="add-node conv" data-bind="visible: set.expanded()"></div>
+
+                        <!-- space -->
+                        <div data-bind="hidden: set.expanded()"></div>
+                        
                     </div>
+
+                    <div class="add-node conv-set"></div>
+
                 </div>
 
             </div>
@@ -81,16 +90,14 @@
                     <!-- <tbody data-bind="template: { name: 'editable-node-line-template', foreach: visibleConversation().lines }">
                     </tbody> -->
                     <tbody data-bind="foreach: {data: visibleConversation().lines, as: 'line'}">
-                        <!-- <tr data-bind="lineNode: $data">
 
-                        </tr> -->
                         <tr data-bind="foreach: $parent.meta.lineValuesOrder">
                             <td><input class="line-input" data-bind="textInput: line.lineValues[$data]"></input></td>
                         </tr>
-
+                        
                     </tbody>
-                    
                 </table>
+                <div class="add-node line"></div>
             </div>
 
         </div>      

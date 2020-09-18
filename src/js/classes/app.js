@@ -104,10 +104,12 @@ export var App = function(name, version){
             setTimeout(function(){$(self.editingNode).find('.editable-node-input').trigger('focus')})
         })
         $(document).on('blur', '.editable-node-input', function(){
+            console.log('blur')
             if(self.editingNode === $(this).parents('editable-node')[0]){
                 self.editingNode = null
             }
             ko.dataFor(this).editable(false)
+            data.checkNoRepeatingIDs()
         })
         $(document).on('click', '.conversation-node', function(){
             self.visibleConversation(ko.dataFor(this))
@@ -123,6 +125,19 @@ export var App = function(name, version){
         })
         $('.expand-collapse').addClass('collapse')
 
+        //+ button (add node)
+        $(document).on('click', '.add-node', function(){
+            if($(this).hasClass('conv-set')){
+                self.addNodeTo(self.allNodes, 'conv-set')
+            }
+            else if($(this).hasClass('conv')){         
+                self.addNodeTo(ko.contextFor(this).$data.conversations, 'conv')
+            }
+            else if($(this).hasClass('line')){
+                self.addNodeTo(self.visibleConversation().lines, 'line')
+            }
+        })
+
 
         $('#app').show()
         ko.applyBindings(self, $('#app')[0])
@@ -130,6 +145,13 @@ export var App = function(name, version){
         let event = new CustomEvent('tapeReady')
         event.app = self
         window.parent.dispatchEvent(event)
+    }
+
+    this.addNodeTo = function(array, type){
+        array.push(new Node(type, 'new'))
+    }
+    this.insertNodeAt = function(array, index, type){
+        array.splice(index, 0, new Node(type))
     }
 
     

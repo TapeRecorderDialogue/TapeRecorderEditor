@@ -34,6 +34,39 @@ export const data = {
     //path to the current json file being edited
     editingPath: undefined,
 
+    // check if all conv-set names are different, and if all conv names in a set are different
+    // if there are repeats highlight the nodes that are repeated
+    checkNoRepeatingIDs: function(){
+        let allNodes = this.app.allNodes()
+        let setChecks = []
+        let setFirstOf = {}
+        let checkNode = function(node, checks, firstOf){
+            if(checks.includes(node.id())){
+                node.hasError(true)
+                firstOf[node.id()].hasError(true)
+            }
+            else{
+                checks.push(node.id())
+                firstOf[node.id()] = node
+                node.hasError(false)
+            }
+        }
+
+        allNodes.forEach(node => {
+            checkNode(node, setChecks, setFirstOf)
+            let childChecks = []
+            let childFirstOf = {}
+            node.conversations().forEach(child => checkNode(child, childChecks, childFirstOf)) 
+        })
+
+
+        return allNodes.length == checks.length
+    },
+
+    // removeDuplicates: function(arr){
+    //     return arr.filter((v, i) => arr.indexOf(v) == i)
+    // },
+
     //save as, create save file dialog
     saveJsonToFile: function(jsonStr){
         let blob = new Blob([jsonStr], { type: 'text/plain;charset=utf-8' })

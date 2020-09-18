@@ -31,6 +31,9 @@ export var Node = function(type = null, id = null){
     // show children? (conv/conv-set only)
     this.expanded = ko.observable(true)
 
+    // highlight in red because there is an issue (duplicate names)
+    this.hasError = ko.observable(false)
+
     this.setDataFromConversationSet = function(set){
         if(self.type() !== 'conv-set') throw 'Node is of type ' + self.type() + ', not conv-set'
 
