@@ -27,6 +27,7 @@
 
 .editable-node {
     /* display: block; */
+    display: inline-block;
     cursor: pointer;
 }
 
@@ -54,14 +55,62 @@
     clear: both;
     overflow: visible;
     margin-left: 20px;
-    padding-bottom: 20px;
+    margin-bottom: 20px;
     color: #18bb18;
+    background-color: #dddddd;
     cursor: pointer;
+    width: 7px;
 }
 
 .add-node::before {
     content: '+';
 }
+
+.delete-node {
+    display: inline-block;
+    color: #da4141;
+    background-color: #dddddd;
+    cursor: pointer;
+    margin-left: 16px;
+    width: 7px;
+    visibility: hidden;
+}
+
+.delete-node::before {
+    content: 'x';
+}
+
+.node-container:hover>.delete-node {
+    visibility: visible;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #eeeeee;
+    min-width: 160px;
+    z-index: 1;
+}
+
+.dropdown-content div {
+    color: black;
+    padding: 8px 10px;
+    display: block;
+}
+
+.dropdown-content div:hover {
+    background-color: #dddddd;
+}
+
+.dropdown:hover .dropdown-content{
+    display: block;
+}
+
 
 #conv-details {
     position: fixed;
@@ -89,4 +138,88 @@
 
 input {
     font-family: Inconsolata, Monaco, Consolas, 'Courier New', Courier, monospace;
+}
+
+.center-popup {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    top: 50%;
+    left: 50%;
+    width: auto;
+    height: auto;
+    padding: 20px;
+    border: 2px #cccccc solid;
+    border-radius: 3px;
+    background-color: #ddd;
+    visibility: hidden;
+    z-index: 1;
+}
+
+.center-popup.show {
+    visibility: visible;
+}
+
+#center-popup-toast {
+    margin: auto;
+    text-align: center;
+    font-size: medium;
+    font-style: italic;
+    color: lightcoral;
+    margin-bottom: 10px;
+}
+
+#center-popup-title {
+    margin: auto;
+    text-align: center;
+    font-size: large;
+    font-weight: bold;
+}
+
+#center-popup-content {
+    margin: auto;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#center-popup-content div {
+    margin: auto;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#add-line-value-ok {
+    border: none;
+    padding: 16px;
+    width: 25%;
+    background-color: #77e66d;
+    color: black;
+}
+
+#add-line-value-ok:hover {
+    background-color: #5cb154;
+}
+
+#add-line-value-cancel {
+    border: none;
+    padding: 16px;
+    width: 25%;
+    background-color: #e46262;
+    color: black;
+}
+
+#add-line-value-cancel:hover {
+    background-color: #b64f4f;
+}
+
+.error-highlight {
+    background-color: lightcoral
+}
+
+.tip {
+    width: auto;
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: #ddd;
 }

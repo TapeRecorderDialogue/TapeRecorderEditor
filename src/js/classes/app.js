@@ -14,11 +14,12 @@ export var App = function(name, version){
     this.meta = {
         // the variables that a line stores, defaults to (sayer + words)
         // key: name
-        // value: "string/bool/number"
+        // value: typeof, "string/bool/number"
         lineValues: {sayer: "string", words: "string"},
 
         // order that linevalues are displayed
-        lineValuesOrder: ["sayer", "words"],
+        // lineValuesOrder: ["sayer", "words"],
+        lineValuesOrder: ko.observableArray(["sayer", "words"]),
 
         // whether or not lineValues can be changed (add/remove a value)
         // make false to lock in the lineValues as to not accidently change them
@@ -34,57 +35,17 @@ export var App = function(name, version){
 
     //<test code>
 
-    let n1 = new Node('conv-set', 'Set1')
-    n1.conversations.push(new Node('conv', 'Conv 1'))
-    let l1 = new Node('line')
-    l1.lineValues.sayer = ko.observable("Person")
-    l1.lineValues.words = ko.observable("Hello")
-    n1.conversations()[0].lines.push(l1)
+    // let n1 = new Node('conv-set', 'Set1')
+    // n1.conversations.push(new Node('conv', 'Conv 1'))
+    // let l1 = new Node('line')
+    // l1.lineValues.sayer = ko.observable("Person")
+    // l1.lineValues.words = ko.observable("Hello")
+    // n1.conversations()[0].lines.push(l1)
 
-    self.allNodes.push(n1)
+    // self.allNodes.push(n1)
 
     //</>
 
-
-
-    this.setupCustomBindingHandlers = function(){
-        // ko.bindingHandlers.lineNode = {
-        //     init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-        //         var value = valueAccessor()
-        //         var unwrappedValue = ko.unwrap(value)
-
-        //         allBindings.bind("with", "$data")
-                
-        //         alert('init')
-
-        //         for(const key of Object.keys(self.meta.lineValues)){
-        //             //make a new table entry
-        //             var $new = document.createElement("td")
-        //             $new.className = "editable-node-input"
-        //             console.log(unwrappedValue)
-        //             console.log(bindingContext.$data)
-        //             $(element).append($new)
-        //             $new.setAttribute("data-bind", `textInput: $data.lineValues.${key}`)
-        //             ko.applyBindings(self, $($new)[0]);
-        //         }
-                
-        //     },
-        //     update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-        //         // var value = valueAccessor()
-        //         // var unwrappedValue = ko.unwrap(value)
-        //         // alert('update')
-        //         // for(const key of Object.keys(self.meta.lineValues)){
-        //         //     //make a new table entry
-        //         //     var $new = document.createElement("td")
-        //         //     $new.className = "editable-node-input"
-        //         //     $new.setAttribute("data-bind", "textInput: $data().lineValues." + key)
-        //         //     $(element).append($new)
-        //         // }
-
-        //     }
-        // }
-        // console.log("added bindings " )
-    }
 
     this.run = function(){
 
@@ -92,11 +53,42 @@ export var App = function(name, version){
         data.app.allNodes = self.allNodes
         data.doSetup()
 
-        self.setupCustomBindingHandlers()
+        self.jquerySetup()
 
+        $('#app').show()
+        ko.applyBindings(self, $('#app')[0])
 
-        //double click: allow editing of name of node
-        //single click: set current conversation    
+        let event = new CustomEvent('tapeReady')
+        event.app = self
+        window.parent.dispatchEvent(event)
+    }
+
+    // this.koBindingsAndComputedSetup = function(){
+
+    // }
+
+    this.jquerySetup = function(){
+        // Restricts input for each element in the set of matched elements to the given inputFilter.
+        (function($) {
+            $.fn.inputFilter = function(inputFilter, selector) {
+            // return $(document).on("input keydown keyup mousedown mouseup select contextmenu drop", this, function() {
+            return $(document).on("input keydown keyup mousedown mouseup select contextmenu drop", selector, function() {
+                if (inputFilter(this)) {
+                this.oldValue = this.value;
+                this.oldSelectionStart = this.selectionStart;
+                this.oldSelectionEnd = this.selectionEnd;
+                } else if (this.hasOwnProperty("oldValue")) {
+                this.value = this.oldValue;
+                this.setSelectionRange(this.oldSelectionStart, this.oldSelectionEnd);
+                } else {
+                this.value = "";
+                }
+            });
+            };
+        }($));
+
+        // double click: allow editing of name of node
+        // single click: set current conversation    
         $(document).on('dblclick', '.editable-node-display', function(){
             $('.editable-node-input').trigger('blur')
             self.editingNode = $(this).parents('.editable-node')[0]
@@ -116,16 +108,13 @@ export var App = function(name, version){
             // self.visibleConversation = ko.dataFor(this)
         })
 
-        //expand/collapse
+        // expand/collapse
         $(document).on('click','.expand-collapse', function(){
             let ex = ko.dataFor(this).expanded
-            $(this).removeClass(ex() ? 'collapse' : 'expand')
-            $(this).addClass(ex() ? 'expand' : 'collapse')
             ex(!ex())
         })
-        $('.expand-collapse').addClass('collapse')
 
-        //+ button (add node)
+        // + button (add node)
         $(document).on('click', '.add-node', function(){
             if($(this).hasClass('conv-set')){
                 self.addNodeTo(self.allNodes, 'conv-set')
@@ -136,22 +125,96 @@ export var App = function(name, version){
             else if($(this).hasClass('line')){
                 self.addNodeTo(self.visibleConversation().lines, 'line')
             }
+            data.checkNoRepeatingIDs()
         })
 
+        // x button (delete node)
+        $(document).on('click', '.delete-node', function(){
+            let ctx = ko.contextFor(this)
+            ctx.$parentContext.$rawData.splice(ctx.$index(), 1)
+            data.checkNoRepeatingIDs()
+        })
 
-        $('#app').show()
-        ko.applyBindings(self, $('#app')[0])
+        // adding line values
+        $(document).on('click', '#add-line-string', function(){
+            self.createAddLineValuePopup('string')
+        })
+        $(document).on('click', '#add-line-number', function(){
+            self.createAddLineValuePopup('number')
+        })
+        $(document).on('click', '#add-line-boolean', function(){
+            // self.createAddLineValuePopup('boolean')
+        })
 
-        let event = new CustomEvent('tapeReady')
-        event.app = self
-        window.parent.dispatchEvent(event)
+        // check that input in line values matches the type
+        $('.line-input').inputFilter(function(element){
+            let value = element.value
+            let type = self.meta.lineValues[ko.contextFor(element).$data]
+
+            // is float/int?
+            if(type === "number" && /^-?\d*[.]?\d*$/.test(value)) return true
+            if(type === "string") return true
+
+            return false
+        }, '.line-input')
     }
+
 
     this.addNodeTo = function(array, type){
         array.push(new Node(type, 'new'))
     }
     this.insertNodeAt = function(array, index, type){
         array.splice(index, 0, new Node(type))
+    }
+
+    // popup in center that asks for input
+    this.createAddLineValuePopup = function(type){
+        // show window
+        $('.center-popup').toggleClass('show')
+
+        // title
+        $('#center-popup-title').text(`Adding a ${type} line value`)
+
+        // remove body content
+        $('#center-popup-content').empty()
+
+        // set content
+        $('#center-popup-content').append('<div>Name of new value: <input id="add-line-value-input" type="text"></input></div>')
+
+        // OK/cancel buttons
+        $('#center-popup-content').append('<button id="add-line-value-ok">Ok</button>')
+        $('#center-popup-content').append('<button id="add-line-value-cancel">Cancel</button>')
+        $(document).on('click', '#add-line-value-ok', function(){
+            if(self.addLineValue(type, $("#add-line-value-input").val())){
+                $('.center-popup').toggleClass('show', false)
+            }
+        })
+        $(document).on('click', '#add-line-value-cancel', function(){
+            $('.center-popup').toggleClass('show', false)
+        })
+    }
+
+    this.addLineValue = function(type, name){
+        // invalid if has whitespace
+        let invalid = /\s/
+
+        // if a line value of this name already exists, don't set
+        if(self.meta.lineValues[name] != null){
+            $('#center-popup-toast').text(`Line Value of name ${name} already exists.`)
+            return false
+        }
+        // if invalid characters
+        if(invalid.test(name)){
+            $('#center-popup-toast').text(`Invalid name, do not use whitespace`)
+            return false
+        }
+
+        self.meta.lineValues[name] = type
+        self.meta.lineValuesOrder.push(name)
+        self.data.addLineValuesToAllNodes(name)
+
+        return true
+
     }
 
     

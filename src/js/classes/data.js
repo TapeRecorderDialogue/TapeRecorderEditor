@@ -27,6 +27,11 @@ export const data = {
         })
         $("#save-file-button").on('click', function(){
             data.saveNodeArrayToJson(data.app.allNodes())
+
+            // display warn if there are repeating ids
+            if(!data.checkNoRepeatingIDs()){
+                alert("You have IDs that are repeating. Anything highlighted in red is invalid. Your file was still saved.")
+            }
         })
         
     },
@@ -60,7 +65,7 @@ export const data = {
         })
 
 
-        return allNodes.length == checks.length
+        return allNodes.length == setChecks.length
     },
 
     // removeDuplicates: function(arr){
@@ -111,7 +116,7 @@ export const data = {
         
                     for(const [key, value] of Object.entries(line.lineValues)){
                         if(data.app.meta.lineValues[key] == null) throw `Key ${key} is invalid. Check that metadata contains it.`
-                        lineNode.lineValues[key] = value()
+                        lineNode.lineValues[key] = ko.unwrap(value)
                     }
     
                     convNode.lines.push(lineNode)
@@ -257,4 +262,15 @@ export const data = {
     //     }
     //     data.app.allNodes(temp)
     // }
+
+    // called in app.addLineValue. Add an empty value to all line nodes
+    addLineValuesToAllNodes: function(key){
+        this.app.allNodes().forEach(convSet => {
+            convSet.conversations().forEach(conv => {
+                conv.lines().forEach(line => {
+                    line.lineValues[key] = ko.observable()
+                })
+            })
+        })
+    }
 }

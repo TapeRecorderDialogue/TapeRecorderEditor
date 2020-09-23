@@ -34,29 +34,33 @@ export var Node = function(type = null, id = null){
     // highlight in red because there is an issue (duplicate names)
     this.hasError = ko.observable(false)
 
-    this.setDataFromConversationSet = function(set){
-        if(self.type() !== 'conv-set') throw 'Node is of type ' + self.type() + ', not conv-set'
+    this.expandOrCollapseOnClick = ko.pureComputed(function(){
+        return this.expanded() ? 'collapse' : 'expand'
+    }, self)
 
-        self.id(set.id)
-        var convs = set.conversations.slice()
+    // this.setDataFromConversationSet = function(set){
+    //     if(self.type() !== 'conv-set') throw 'Node is of type ' + self.type() + ', not conv-set'
 
-        //for every conversation in conversationset
-        for(var i = 0; i < convs.length; i++){
-            var convNode = new Node('conv', convs[i].id)
-            var lines = convs[i].lines.slice()
+    //     self.id(set.id)
+    //     var convs = set.conversations.slice()
+
+    //     //for every conversation in conversationset
+    //     for(var i = 0; i < convs.length; i++){
+    //         var convNode = new Node('conv', convs[i].id)
+    //         var lines = convs[i].lines.slice()
             
-            //for every line in conversation
-            for(var j = 0; j < lines.length; j++){
-                var lineNode = new Node('line')
-                lineNode.values.sayer(lines[j].sayer)
-                lineNode.values.words(lines[j].words)
-                convNode.values.lines()[j] = lineNode
-            }
-            // self.values.conversations().push(convNode)
-            self.values.conversations()[i] = convNode
-        }      
+    //         //for every line in conversation
+    //         for(var j = 0; j < lines.length; j++){
+    //             var lineNode = new Node('line')
+    //             lineNode.values.sayer(lines[j].sayer)
+    //             lineNode.values.words(lines[j].words)
+    //             convNode.values.lines()[j] = lineNode
+    //         }
+    //         // self.values.conversations().push(convNode)
+    //         self.values.conversations()[i] = convNode
+    //     }      
 
-    }
+    // }
 
     // this.children = ko.observableArray([])
     // this.editable = ko.observable(false)
@@ -161,6 +165,8 @@ export var nodeArrayFromJsonObject = function(obj){
                 var lineNode = new Node('line')
     
                 for(const [key, value] of Object.entries(line.lineValues)){
+                    if(obj.meta.lineValues[key] == null) throw "Line value of name " + key + " does not exist. Check the meta.lineValues in your json file"
+                    if(obj.meta.lineValues[key] != typeof(value)) console.warn("Line value of name " + key + " is of type " + typeof(value) + ", supposed to be of type " + obj.meta.lineValues[key])
                     lineNode.lineValues[key] = ko.observable(value)
                 }
 
