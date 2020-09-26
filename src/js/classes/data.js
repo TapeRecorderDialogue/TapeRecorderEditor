@@ -83,8 +83,13 @@ export const data = {
     },
 
     saveWithMeta: function(obj){
+        let tempMeta = {
+            lineValues: data.app.meta.lineValues,
+            lineValuesOrder: data.app.meta.lineValuesOrder(),
+            lineValuesChangeable: data.app.meta.lineValuesChangeable
+        }
         let s = {
-            meta: data.app.meta,
+            meta: tempMeta,
             nodes: obj
         }
         this.saveJsonToFile(JSON.stringify(s))
@@ -176,7 +181,7 @@ export const data = {
 
     //             for(var k = 0; k < lines.length; k++){
     //                 let lineNode = lines[k]
-    //                 let line = new Line(lineNode.values.sayer(), lineNode.values.words())
+    //                 let line = new Line(lineNode.values.speaker(), lineNode.values.words())
     //                 conv.addLine(line)
     //             }
 
@@ -209,7 +214,10 @@ export const data = {
             var arr = nodeArrayFromJsonObject(json)
 
             //load meta
-            data.app.meta = json.meta
+            data.app.meta.lineValues = json.meta.lineValues
+            data.app.meta.lineValuesOrder = ko.observableArray(json.meta.lineValuesOrder)
+            data.app.meta.lineValuesChangeable = json.meta.lineValuesChangeable
+
 
             //clear and load nodes
             data.app.allNodes.removeAll()
@@ -272,5 +280,15 @@ export const data = {
                 })
             })
         })
-    }
+    },
+
+    removeLineValuesFromAllNodes: function(key){
+        this.app.allNodes().forEach(convSet => {
+            convSet.conversations().forEach(conv => {
+                conv.lines().forEach(line => {
+                    line.lineValues[key] = undefined
+                })
+            })
+        })
+    },
 }

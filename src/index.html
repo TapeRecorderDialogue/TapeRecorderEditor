@@ -14,11 +14,11 @@
 
         <!-- <script type="text/html" id="editable-node-line-template">
             <tr class="editable-node" data-bind="if: editable()">
-                <td class="editable-node-input"><input data-bind="textInput: alues.sayer"></input></td>
+                <td class="editable-node-input"><input data-bind="textInput: alues.speaker"></input></td>
                 <td class="editable-node-input"><input data-bind="textInput: values.words"></input></td>
             </tr>
             <tr class="editable-node" data-bind="ifnot: editable()">
-                <td class="editable-node-display"><b><span data-bind="text: values.sayer"></span> : </b></td>
+                <td class="editable-node-display"><b><span data-bind="text: values.speaker"></span> : </b></td>
                 <td class="editable-node-display"><span data-bind="text: values.words"></span></td>
             </tr>
         </script> -->
@@ -34,7 +34,7 @@
                     <div class="node" data-bind="foreach: { data: node.children, as: 'childnode' }">
                         <div class="node-element" data-bind="contentEditable: childnode.editable(), text: childnode.id"></div>
                         <div class="node" data-bind="foreach: { data: childnode.children, as: 'grandchildnode' }">
-                            <div><b><span class="node-element" data-bind="contentEditable: grandchildnode.editable(), text: grandchildnode.values.sayer"></span> says: </b><span class="node-element" data-bind="contentEditable: grandchildnode.editable(), text: grandchildnode.values.words"></span></div>
+                            <div><b><span class="node-element" data-bind="contentEditable: grandchildnode.editable(), text: grandchildnode.values.speaker"></span> says: </b><span class="node-element" data-bind="contentEditable: grandchildnode.editable(), text: grandchildnode.values.words"></span></div>
                         </div>
                     </div>
                 </div>
@@ -104,7 +104,10 @@
                 <table class="conv-table">
                     <thead>
                         <tr data-bind="foreach: meta.lineValuesOrder">
-                            <td><i data-bind="text: $data"></i></td>
+                            <td>
+                                <span class="line-value-label" data-bind="text: $data"></span>
+                                <span class="delete-line-value"></span>
+                            </td>
                         </tr>
                     </thead>
                     <!-- <tbody data-bind="template: { name: 'editable-node-line-template', foreach: visibleConversation().lines }">

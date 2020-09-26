@@ -1,5 +1,6 @@
 import { data } from './data'
 import { Node } from './node'
+import { LimitedStack } from './objects'
 
 export var App = function(name, version){
     const self = this
@@ -10,16 +11,19 @@ export var App = function(name, version){
     //Array of all nodes (conv-sets/convs/lines)
     this.allNodes = ko.observableArray([])
 
+    // // for undoing
+    // this.allNodesHistory = new LimitedStack(10)
+
     // metadata
     this.meta = {
-        // the variables that a line stores, defaults to (sayer + words)
+        // the variables that a line stores, defaults to (speaker + words)
         // key: name
         // value: typeof, "string/bool/number"
-        lineValues: {sayer: "string", words: "string"},
+        lineValues: {speaker: "string", words: "string"},
 
         // order that linevalues are displayed
-        // lineValuesOrder: ["sayer", "words"],
-        lineValuesOrder: ko.observableArray(["sayer", "words"]),
+        // lineValuesOrder: ["speaker", "words"],
+        lineValuesOrder: ko.observableArray(["speaker", "words"]),
 
         // whether or not lineValues can be changed (add/remove a value)
         // make false to lock in the lineValues as to not accidently change them
@@ -38,7 +42,7 @@ export var App = function(name, version){
     // let n1 = new Node('conv-set', 'Set1')
     // n1.conversations.push(new Node('conv', 'Conv 1'))
     // let l1 = new Node('line')
-    // l1.lineValues.sayer = ko.observable("Person")
+    // l1.lineValues.speaker = ko.observable("Person")
     // l1.lineValues.words = ko.observable("Hello")
     // n1.conversations()[0].lines.push(l1)
 
@@ -146,6 +150,13 @@ export var App = function(name, version){
             // self.createAddLineValuePopup('boolean')
         })
 
+        // deleting line values
+        $(document).on('click', '.delete-line-value', function(){
+            let lineValueName = self.meta.lineValuesOrder()[ko.contextFor(this).$index()]
+            console.log("remove " + lineValueName)
+            self.createDeleteLineValuePopup(lineValueName)
+        })
+
         // check that input in line values matches the type
         $('.line-input').inputFilter(function(element){
             let value = element.value
@@ -167,30 +178,86 @@ export var App = function(name, version){
         array.splice(index, 0, new Node(type))
     }
 
-    // popup in center that asks for input
-    this.createAddLineValuePopup = function(type){
+    // creates a popup window
+    // title: title of window
+    // content: body content, text only
+    // appends: array, where each element is ['jquerySelector', 'htmlContent']
+    // otherAdditions: function to be run at end
+    this.createPopup = function(title = "Title", content = "Body", appends = undefined, otherAdditions = undefined){
         // show window
         $('.center-popup').toggleClass('show')
 
         // title
-        $('#center-popup-title').text(`Adding a ${type} line value`)
+        $('#center-popup-title').text(title)
 
         // remove body content
         $('#center-popup-content').empty()
 
-        // set content
-        $('#center-popup-content').append('<div>Name of new value: <input id="add-line-value-input" type="text"></input></div>')
+        $('#center-popup-content').text(content)
 
-        // OK/cancel buttons
-        $('#center-popup-content').append('<button id="add-line-value-ok">Ok</button>')
-        $('#center-popup-content').append('<button id="add-line-value-cancel">Cancel</button>')
-        $(document).on('click', '#add-line-value-ok', function(){
-            if(self.addLineValue(type, $("#add-line-value-input").val())){
+        if(appends != undefined){
+            appends.forEach(append => {
+                $(append[0]).append(append[1])
+            })
+        }
+
+        if(otherAdditions != undefined){
+            otherAdditions()
+        }
+    }
+
+    // popup in center that asks for input
+    this.createAddLineValuePopup = function(type){
+        if(!self.meta.lineValuesChangeable){
+            alert("Adding and removing line values is disabled on this file. To enable, go into your .json file and change meta.lineValuesChangeable to True")
+            return
+        }
+        // remove listeners on these buttons
+        $(document).off('click', '#add-line-value-ok')
+        $(document).off('click', '#add-line-value-cancel')
+
+        this.createPopup(`Adding a ${type} line value`, null, 
+        [
+            ['#center-popup-content', '<div>Name of new value: <input id="add-line-value-input" type="text"></input></div>'], 
+            ['#center-popup-content', '<button id="add-line-value-ok">Ok</button>'], 
+            ['#center-popup-content', '<button id="add-line-value-cancel">Cancel</button>']
+        ], 
+        function(){
+            $(document).on('click', '#add-line-value-ok', function(){
+                if(self.addLineValue(type, $("#add-line-value-input").val())){
+                    $('.center-popup').toggleClass('show', false)
+                }
+            })
+            $(document).on('click', '#add-line-value-cancel', function(){
                 $('.center-popup').toggleClass('show', false)
-            }
+            })
         })
-        $(document).on('click', '#add-line-value-cancel', function(){
-            $('.center-popup').toggleClass('show', false)
+    }
+
+    // popup with confirm/cancel button
+    this.createDeleteLineValuePopup = function(name){
+        if(!self.meta.lineValuesChangeable){
+            alert("Adding and removing line values is disabled on this file. To enable, go into your .json file and change meta.lineValuesChangeable to True")
+            return
+        }
+        // remove listeners on these buttons
+        $(document).off('click', '#add-line-value-ok')
+        $(document).off('click', '#add-line-value-cancel')
+
+        this.createPopup(`Delete ${name} from all conversations?`, 'Are you absolutely sure?',         
+        [ 
+            // using add-line-value buttons just to avoid writing more css
+            ['#center-popup-content', '<button id="add-line-value-ok">Ok</button>'], 
+            ['#center-popup-content', '<button id="add-line-value-cancel">Cancel</button>']
+        ], 
+        function(){
+            $(document).on('click', '#add-line-value-ok', function(){
+                self.removeLineValue(name)
+                $('.center-popup').toggleClass('show', false)
+            })
+            $(document).on('click', '#add-line-value-cancel', function(){
+                $('.center-popup').toggleClass('show', false)
+            })
         })
     }
 
@@ -215,6 +282,17 @@ export var App = function(name, version){
 
         return true
 
+    }
+
+    this.removeLineValue = function(name){
+        // remove from metadata
+        // self.meta.lineValues[name] = undefined
+        delete self.meta.lineValues[name]
+        self.meta.lineValuesOrder.remove(name)
+        // remove from all nodes
+        self.data.removeLineValuesFromAllNodes(name)
+
+        console.log(self.meta.lineValues)
     }
 
     

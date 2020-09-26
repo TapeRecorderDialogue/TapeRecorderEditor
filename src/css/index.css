@@ -136,6 +136,15 @@
     background-color: #dddddd;
 }
 
+.delete-line-value {
+    cursor: pointer;
+    color: #da4141;
+}
+
+.delete-line-value::before {
+    content:'x';
+}
+
 input {
     font-family: Inconsolata, Monaco, Consolas, 'Courier New', Courier, monospace;
 }

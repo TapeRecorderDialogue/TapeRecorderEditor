@@ -21,7 +21,7 @@ export var Node = function(type = null, id = null){
     this.lines = ko.observableArray([]),
     //for line only
     this.lineValues = {
-        // sayer: ko.observable(),
+        // speaker: ko.observable(),
         // words: ko.observable(),
     }
     
@@ -52,7 +52,7 @@ export var Node = function(type = null, id = null){
     //         //for every line in conversation
     //         for(var j = 0; j < lines.length; j++){
     //             var lineNode = new Node('line')
-    //             lineNode.values.sayer(lines[j].sayer)
+    //             lineNode.values.speaker(lines[j].speaker)
     //             lineNode.values.words(lines[j].words)
     //             convNode.values.lines()[j] = lineNode
     //         }
@@ -66,7 +66,7 @@ export var Node = function(type = null, id = null){
     // this.editable = ko.observable(false)
     
     // //values only for line type
-    // this.sayer = ko.observable('')
+    // this.speaker = ko.observable('')
     // this.words = ko.observable('')
 
     // this.setNodeValue = function(valueName, newValue){
@@ -126,9 +126,9 @@ export var Node = function(type = null, id = null){
     //     return node
     // }
 
-    // this.setLine = function(sayer, words){
+    // this.setLine = function(speaker, words){
     //     self.type = 'line'
-    //     self.sayer = sayer
+    //     self.speaker = speaker
     //     self.words = words
     // }
 
@@ -144,7 +144,7 @@ export var Node = function(type = null, id = null){
     //     return valueName === 'id' 
     //         // || (valueName === 'conversations' && self.isType('conv-set'))
     //         // || (valueName === 'lines' && self.isType('conv'))
-    //         || ((valueName === 'words' || valueName === 'sayer') && self.isType('line'))
+    //         || ((valueName === 'words' || valueName === 'speaker') && self.isType('line'))
     // }
 }
 

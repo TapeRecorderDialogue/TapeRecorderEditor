@@ -1,81 +1,110 @@
-// Contains conversation, conversationset, and line objects
-// conversation: conversationID (string), lines (line[])
-// line: words (string), sayer (string)
+import { get } from "jquery"
 
-export var Conversation = function(id = null, lines = []){
+// stack with limited size
+export var LimitedStack = function(size){
     const self = this
 
-    // this.id = ko.observable(id)
-    // this.lines = ko.observableArray(lines)
-    this.id = id
-    this.lines = lines
+    this.array = []
+    this.size = size
+    this.currentIndex = -1
+    this.maxIndex = -1
 
+    this.length = size
 
-    this.setID = function(id){
-        // self.id(id)
-        self.id = id
-    }
-    
-    this.setLines = function(lines = []){
-        self.lines = lines.slice()
-        // self.lines.removeAll()
-        // lines.forEach(l => self.lines().push(l))
-    }
-
-    this.insertLineAt = function(line, index){
-        self.lines.splice(index, 0, line)
+    this.push = function(object){
+        self.currentIndex++
+        // if reached end, shift
+        if(self.currentIndex >= size){
+            self.array.shift()
+            self.currentIndex--
+        }
+        self.array[self.currentIndex] = object
     }
 
-    this.addLine = function(line){
-        self.lines.push(line)
+    this.pop = function(){
+        if(self.currentIndex < 0) throw "Cannot pop at negative index"
+        // remove at current index
+        let ret = self.array.splice(self.currentIndex, 1)[0]
+        self.currentIndex--
+        return ret
     }
 
-    // this.getType() = function() {return 'conv'}
-}
+    // pop without throw
+    this.popSafe = function(){
+        if(self.currentIndex < 0) return undefined
+        let ret = self.array.splice(self.currentIndex, 1)[0]
+        self.currentIndex--
+        return ret
+    }
 
-export var Line = function(sayer = null, words = null){
-    const self = this
+    this.peek = function(){
+        return self.array[self.currentIndex]
+    }
 
-    // this.sayer = ko.observable(sayer)
-    // this.words = ko.observable(words)
-    this.sayer = sayer
-    this.words = words
-
-    // this.getType() = function() {return 'line'}
-}
-
-export var ConversationSet = function(id = null, conversations = []){
-    const self = this
-
-    // this.id = ko.observable(id)
-    // this.conversations = ko.observableArray(conversations)
-    this.id = id
-    this.conversations = conversations
-
+    // get at index
     this.get = function(index){
-        // return self.conversations()[index]
-        return self.conversations[index]
+        if(index >= self.size) throw `Index ${index} is out of bounds`
+        return self.array[index]
     }
 
-    this.setConversations = function(conversations = []){
-        self.conversations = conversations.slice()
-        // self.conversations.removeAll()
-        // conversations.forEach(c => self.conversations().push(c))
+    // change currentIndex by offset and return the value at new currentIndex
+    this.cycle = function(offset){
+        if(self.currentIndex + offset < 0 || self.currentIndex + offset >= self.size) throw "Cannot cycle to out of bounds index"
+        self.currentIndex += offset    
+        return self.array[self.currentIndex]
     }
 
-    this.setConversationSetID = function(id){
-        // self.id(id)
-        self.id = id
+    this.cycleSafe = function(offset){
+        if(self.currentIndex + offset < 0 || self.currentIndex + offset >= self.size) return undefined
+        self.currentIndex += offset    
+        return self.array[self.currentIndex]
     }
 
-    this.addConversationOf = function(id, lines){
-        self.addConversation(new Conversation(id, lines))
+    this.clear = function(){
+        self.array.splice(0, self.array.length)
+        self.currentIndex = -1
+    }
+}
+
+// stack that loops, has limited size
+export var CyclingStack = function(size){
+    const self = this
+
+    this.array = []
+    this.size = size
+    this.currentIndex = -1
+
+    this.push = function(object){
+        self.currentIndex = mod(self.currentIndex + 1, self.size)
+        self.array[self.currentIndex] = object
     }
 
-    this.addConversation = function(conv){
-        // self.conversations().push(conv)
-        self.conversations.push(conv)
+    this.pop = function(){
+        // remove at current index
+        let ret = self.array.splice(self.currentIndex, 1)[0]
+        self.currentIndex = mod(self.currentIndex - 1, self.size)
+        return ret
     }
 
-    // this.getType() = function() {return 'conv-set'}
+    // get at index
+    this.get = function(index){
+        if(index >= self.size) throw `Index ${index} is out of bounds`
+        return self.array[mod(self.currentIndex + index, self.size)]
+    }
+
+    // pop, but don't remove
+    this.cycle = function(){
+        let ret = self.array[self.currentIndex]
+        self.currentIndex = mod(self.currentIndex - 1, self.size)
+        return ret
+    }
+
+    this.clear = function(){
+        self.array.splice(0, self.array.length)
+    }
+}
+
+
+function mod(x, m){
+    return (x % m + m) % m
 }
