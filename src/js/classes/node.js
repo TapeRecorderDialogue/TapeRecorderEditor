@@ -1,7 +1,5 @@
 //a node is either a conv, line, or conv-set. it can only hold that type and children.
 
-import { toJS } from "knockout"
-
 // Contains conversation, conversationset, and line objects
 // conv-set: id (string), conversations (conv[])
 // conv: id (string), lines (line[])
@@ -37,6 +35,64 @@ export var Node = function(type = null, id = null){
     this.expandOrCollapseOnClick = ko.pureComputed(function(){
         return this.expanded() ? 'collapse' : 'expand'
     }, self)
+
+    this.deepCopy = function(){
+        let f = (type === 'conv-set') ? this.deepCopySet : ((type === 'conv') ? this.deepCopyConv : this.deepCopyLine)
+        return f(self)
+    }
+
+    this.deepCopySet = function(set){
+        console.log("being copied set --- " + set.id())
+        var setCopy = new Node()
+        var convs = []
+        console.log("copying conversations of length " + self.conversations().length)
+        self.conversations().forEach(conv => {
+            console.log("for " + conv.id())
+            convs.push(self.deepCopyConv(conv))
+        })
+
+        setCopy.conversations(convs)
+        setCopy.copyOtherValues(set)
+        return setCopy
+    }
+
+    this.deepCopyConv = function(conv){
+        console.log("being copied conv --- " + conv.id())
+        var convCopy = new Node()
+        var lines = []
+
+        conv.lines().forEach(line => {
+            lines.push(self.deepCopyLine(line))
+        })
+
+        convCopy.lines(lines)
+        convCopy.copyOtherValues(conv)
+
+        return convCopy
+    }
+
+    this.deepCopyLine = function(line){
+        console.log("being copied line --- " + line.id())
+        var lineCopy = new Node()
+        var lineValues = {}
+        for(var attr in line.lineValues){
+            if(line.lineValues.hasOwnProperty(attr)){
+                lineValues[attr] = line.lineValues[attr]
+            }
+        }
+
+        lineCopy.copyOtherValues(line)
+        return lineCopy
+    }
+
+    // copies values
+    this.copyOtherValues = function(template){
+        self.id(template.id())
+        self.type(template.type())
+        self.editable(template.editable())
+        self.expanded(template.expanded())
+        self.hasError(template.hasError())
+    }
 
     // this.setDataFromConversationSet = function(set){
     //     if(self.type() !== 'conv-set') throw 'Node is of type ' + self.type() + ', not conv-set'

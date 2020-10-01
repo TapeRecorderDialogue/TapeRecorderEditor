@@ -7,9 +7,6 @@ import { nodeArrayFromJsonObject, Node } from './node'
 // saveAs(blob, "asdfasdf.txt")
 export const data = {
 
-    // loadFileButton: $('load-file-button'),
-    // fileInput: $()
-
     //app object that holds this data object
     app: undefined,
 
@@ -26,12 +23,7 @@ export const data = {
             data.loadFile()
         })
         $("#save-file-button").on('click', function(){
-            data.saveNodeArrayToJson(data.app.allNodes())
-
-            // display warn if there are repeating ids
-            if(!data.checkNoRepeatingIDs()){
-                alert("You have IDs that are repeating. Anything highlighted in red is invalid. Your file was still saved.")
-            }
+            data.saveFile()
         })
         
     },
@@ -71,6 +63,16 @@ export const data = {
     // removeDuplicates: function(arr){
     //     return arr.filter((v, i) => arr.indexOf(v) == i)
     // },
+
+    // save function
+    saveFile: function(){
+        data.saveNodeArrayToJson(data.app.allNodes())
+
+        // display warn if there are repeating ids
+        if(!data.checkNoRepeatingIDs()){
+            alert("You have IDs that are repeating. Anything highlighted in red is invalid. Your file was still saved.")
+        }
+    },
 
     //save as, create save file dialog
     saveJsonToFile: function(jsonStr){
@@ -116,12 +118,20 @@ export const data = {
                 var convLines = conv.lines()
                 for(var k = 0; k < convLines.length; k++){
                     var line = convLines[k]
-                    var lineNode = {}
-                    lineNode.lineValues = {}
+
+                    // var lineNode = {}
+                    // lineNode.lineValues = {}
+        
+                    // for(const [key, value] of Object.entries(line.lineValues)){
+                    //     if(data.app.meta.lineValues[key] == null) throw `Key ${key} is invalid. Check that metadata contains it.`
+                    //     lineNode.lineValues[key] = ko.unwrap(value)
+                    // }
+                    
+                    var lineValues = {}
         
                     for(const [key, value] of Object.entries(line.lineValues)){
                         if(data.app.meta.lineValues[key] == null) throw `Key ${key} is invalid. Check that metadata contains it.`
-                        lineNode.lineValues[key] = ko.unwrap(value)
+                        lineValues[key] = ko.unwrap(value)
                     }
     
                     convNode.lines.push(lineNode)
@@ -237,6 +247,8 @@ export const data = {
 
             //clear visibleConversation 
             this.app.visibleConversation(null)
+
+            this.app.onFileFirstLoaded()
 
         }
         reader.readAsText(file, 'UTF-8')

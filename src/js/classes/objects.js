@@ -1,5 +1,3 @@
-import { get } from "jquery"
-
 // stack with limited size
 export var LimitedStack = function(size){
     const self = this
@@ -19,6 +17,19 @@ export var LimitedStack = function(size){
             self.currentIndex--
         }
         self.array[self.currentIndex] = object
+    }
+
+    this.pushAndClearFuture = function(object){
+        self.currentIndex++
+        // if reached end, shift
+        if(self.currentIndex >= size){
+            self.array.shift()
+            self.currentIndex--
+        }
+        self.array[self.currentIndex] = object
+        for(var i = self.currentIndex + 1; i < self.array.length; i++){
+            self.array[i] = undefined
+        }
     }
 
     this.pop = function(){
@@ -57,6 +68,7 @@ export var LimitedStack = function(size){
     this.cycleSafe = function(offset){
         if(self.currentIndex + offset < 0 || self.currentIndex + offset >= self.size) return undefined
         self.currentIndex += offset    
+        console.log(`returning ${self.currentIndex} of stack`)
         return self.array[self.currentIndex]
     }
 

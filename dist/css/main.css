@@ -1,6 +1,5 @@
 #app {
     font-family: Inconsolata, Monaco, Consolas, 'Courier New', Courier, monospace;
-    position: absolute;
     top: 0px;
     left: 0px;
     width: 100%;
@@ -9,12 +8,36 @@
     display: none;
 }
 
+#header {
+    background-color: #dddddd;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    height: 32px;
+    display: inline-block;
+}
+
+#file-title {
+    font-size: 200%;
+    font-weight: bold;
+}
+
+#save-load-buttons {
+    right: 30px;
+    border: 2px thin #444444;
+    padding: 8px;
+}
+
+#body {
+    background-color: #fff;
+}
+
 #tree {
-    position: fixed;
-    overflow: hidden;
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: scroll;
     width: 50%;
     height: 100%;
-    margin-top: 28px;
+    margin-top: 18px;
     left: 0;
 }
 

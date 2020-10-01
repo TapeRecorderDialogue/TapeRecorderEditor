@@ -26,101 +26,95 @@
         <!-- app -->
         <div id="app">
 
-            <!-- old display with nodes -->
+            <div id="header">
 
-            <!-- <div class="all-nodes">
-                <div class="node" data-bind="foreach: { data: sets, as: 'node' }">
-                    <div class="node-element" data-bind="contentEditable: node.editable(), text: node.id"></div>
-                    <div class="node" data-bind="foreach: { data: node.children, as: 'childnode' }">
-                        <div class="node-element" data-bind="contentEditable: childnode.editable(), text: childnode.id"></div>
-                        <div class="node" data-bind="foreach: { data: childnode.children, as: 'grandchildnode' }">
-                            <div><b><span class="node-element" data-bind="contentEditable: grandchildnode.editable(), text: grandchildnode.values.speaker"></span> says: </b><span class="node-element" data-bind="contentEditable: grandchildnode.editable(), text: grandchildnode.values.words"></span></div>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
+                <span id="file-title" data-bind="template: { name: 'editable-node-id-template', data: fileName}"></span>
 
-            <!-- Set and conversation tree -->
+                <!-- Save/Load buttons -->
 
-            <div id="tree">
-                <div class="all-nodes">
-                    <div data-bind="with: allNodes">
-                        <div class="node" data-bind="foreach: { data: $data, as: 'set' }">
-                            <!-- <div class="node-id" data-bind="contentEditable: set.editable(), textInput: set.id"></div> -->
-                            <span class="node-container">
-                                <span class="expand-collapse" data-bind="css: expandOrCollapseOnClick"></span>
-                                <span class="editable-node" data-bind="template: { name: 'editable-node-id-template', data: set }"></span>
-                                <div class="delete-node"></div>
+                <span id="save-load-buttons">
+                    <button id="save-file-button">Save File</button>
+                    <button id="load-file-button">Load File</button>
+                    <input id="file-input" type="file" name="name" style="display: none"></input>
+                </span>
 
-                                <div data-bind="with: $data.conversations">
-                                    <div class="node" data-bind="visible: $parent.expanded(), foreach: { data: $data, as: 'conv'}">
-                                        <!-- <div class="node-id" data-bind="contentEditable: conv.editable(), textInput: conv.id"></div> -->
-                                        <div class="node-container">
-                                            <span class="editable-node conversation-node" data-bind="visible: set.expanded(), template: { name: 'editable-node-id-template', data: conv }"></span>
-                                            <div class="delete-node"></div>
-                                        </div>                           
+            </div>
+
+            <div id="body">
+
+                <!-- Set and conversation tree -->
+
+                <div id="tree">
+                    <div class="all-nodes">
+                        <div data-bind="with: allNodes">
+                            <div class="node" data-bind="foreach: { data: $data, as: 'set' }">
+                                <!-- <div class="node-id" data-bind="contentEditable: set.editable(), textInput: set.id"></div> -->
+                                <span class="node-container">
+                                    <span class="expand-collapse" data-bind="css: expandOrCollapseOnClick"></span>
+                                    <span class="editable-node" data-bind="template: { name: 'editable-node-id-template', data: set }"></span>
+                                    <div class="delete-node"></div>
+
+                                    <div data-bind="with: $data.conversations">
+                                        <div class="node" data-bind="visible: $parent.expanded(), foreach: { data: $data, as: 'conv'}">
+                                            <!-- <div class="node-id" data-bind="contentEditable: conv.editable(), textInput: conv.id"></div> -->
+                                            <div class="node-container">
+                                                <span class="editable-node conversation-node" data-bind="visible: set.expanded(), template: { name: 'editable-node-id-template', data: conv }"></span>
+                                                <div class="delete-node"></div>
+                                            </div>                           
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div class="add-node conv" data-bind="visible: set.expanded()"></div>
+                                    <div class="add-node conv" data-bind="visible: set.expanded()"></div>
 
-                                
+                                    
 
-                                <!-- newline, only needed when not expanded -->
-                                <div data-bind="hidden: set.expanded()"></div>                  
-                            </span>
+                                    <!-- newline, only needed when not expanded -->
+                                    <div data-bind="hidden: set.expanded()"></div>                  
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="add-node conv-set"></div>
+                        <div class="tip" data-bind="visible: allNodes().length < 1 ">Click the '+' to create a Conversation Set</div>
+
+                    </div>
+
+                </div>        
+
+                <!-- Conversation display (lines) -->
+
+                <div id="conv-details" data-bind="if: visibleConversation()">
+
+                    <div class="dropdown">
+                        <button class="add-line-value-button">Add a Value</button>
+                        <div class="dropdown-content">
+                            <div id="add-line-string">String</div>
+                            <div id="add-line-number">Number</div>
+                            <div id="add-line-boolean">Bool (NYI)</div>
                         </div>
                     </div>
+                    
+                    <table class="conv-table">
+                        <thead>
+                            <tr data-bind="foreach: meta.lineValuesOrder">
+                                <td>
+                                    <span class="line-value-label" data-bind="text: $data"></span>
+                                    <span class="delete-line-value"></span>
+                                </td>
+                            </tr>
+                        </thead>
+                        <!-- <tbody data-bind="template: { name: 'editable-node-line-template', foreach: visibleConversation().lines }">
+                        </tbody> -->
+                        <tbody data-bind="foreach: {data: visibleConversation().lines, as: 'line'}">
 
-                    <div class="add-node conv-set"></div>
-                    <div class="tip" data-bind="visible: allNodes().length < 1 ">Click the '+' to create a Conversation Set</div>
-
+                            <tr data-bind="foreach: $parent.meta.lineValuesOrder">
+                                <td><input class="line-input" data-bind="textInput: line.lineValues[$data]"></input></td>
+                            </tr>
+                            
+                        </tbody>
+                    </table>
+                    <div class="add-node line"></div>
                 </div>
-
-            </div>
-
-            <!-- Save/Load buttons -->
-
-            <div id="save-load-buttons">
-                <button id="save-file-button">Save File</button>
-                <button id="load-file-button">Load File</button>
-                <input id="file-input" type="file" name="name" style="display: none"></input>
-                <div></div>
-            </div>
-
-            <!-- Conversation display (lines) -->
-
-            <div id="conv-details" data-bind="if: visibleConversation()">
-
-                <div class="dropdown">
-                    <button class="add-line-value-button">Add a Value</button>
-                    <div class="dropdown-content">
-                        <div id="add-line-string">String</div>
-                        <div id="add-line-number">Number</div>
-                        <div id="add-line-boolean">Bool (NYA)</div>
-                    </div>
-                </div>
-                
-                <table class="conv-table">
-                    <thead>
-                        <tr data-bind="foreach: meta.lineValuesOrder">
-                            <td>
-                                <span class="line-value-label" data-bind="text: $data"></span>
-                                <span class="delete-line-value"></span>
-                            </td>
-                        </tr>
-                    </thead>
-                    <!-- <tbody data-bind="template: { name: 'editable-node-line-template', foreach: visibleConversation().lines }">
-                    </tbody> -->
-                    <tbody data-bind="foreach: {data: visibleConversation().lines, as: 'line'}">
-
-                        <tr data-bind="foreach: $parent.meta.lineValuesOrder">
-                            <td><input class="line-input" data-bind="textInput: line.lineValues[$data]"></input></td>
-                        </tr>
-                        
-                    </tbody>
-                </table>
-                <div class="add-node line"></div>
             </div>
 
             <!-- Popup in center of screen -->

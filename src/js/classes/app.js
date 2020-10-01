@@ -1,18 +1,22 @@
 import { data } from './data'
 import { Node } from './node'
 import { LimitedStack } from './objects'
+import { Input } from './input'
 
 export var App = function(name, version){
     const self = this
 
+    // not the file name
     this.name = ko.observable(name)
     this.data = data
 
+    // file name, which is a node for convenience
+    this.fileName = ko.observable(new Node(" ", "Untitled"))
+
+    this.input = new Input(this)
+
     //Array of all nodes (conv-sets/convs/lines)
     this.allNodes = ko.observableArray([])
-
-    // // for undoing
-    // this.allNodesHistory = new LimitedStack(10)
 
     // metadata
     this.meta = {
@@ -36,6 +40,9 @@ export var App = function(name, version){
     //the current node being edited
     this.editingNode = null
 
+    // history of changes
+    this.history = new LimitedStack(16)
+
 
     //<test code>
 
@@ -56,6 +63,8 @@ export var App = function(name, version){
         data.app = self
         data.app.allNodes = self.allNodes
         data.doSetup()
+        
+        self.input.keyboardEvents()
 
         self.jquerySetup()
 
@@ -100,12 +109,13 @@ export var App = function(name, version){
             setTimeout(function(){$(self.editingNode).find('.editable-node-input').trigger('focus')})
         })
         $(document).on('blur', '.editable-node-input', function(){
-            console.log('blur')
             if(self.editingNode === $(this).parents('editable-node')[0]){
                 self.editingNode = null
             }
             ko.dataFor(this).editable(false)
             data.checkNoRepeatingIDs()
+
+            self.madeChange()
         })
         $(document).on('click', '.conversation-node', function(){
             self.visibleConversation(ko.dataFor(this))
@@ -130,6 +140,7 @@ export var App = function(name, version){
                 self.addNodeTo(self.visibleConversation().lines, 'line')
             }
             data.checkNoRepeatingIDs()
+            self.madeChange()
         })
 
         // x button (delete node)
@@ -137,6 +148,7 @@ export var App = function(name, version){
             let ctx = ko.contextFor(this)
             ctx.$parentContext.$rawData.splice(ctx.$index(), 1)
             data.checkNoRepeatingIDs()
+            self.madeChange()
         })
 
         // adding line values
@@ -172,10 +184,16 @@ export var App = function(name, version){
 
 
     this.addNodeTo = function(array, type){
+        console.log(`adding ${type}`)
         array.push(new Node(type, 'new'))
     }
     this.insertNodeAt = function(array, index, type){
         array.splice(index, 0, new Node(type))
+    }
+
+    // clear undo/redo history and make snapshot
+    this.onFileFirstLoaded = function(){
+        self.madeChange()
     }
 
     // creates a popup window
@@ -279,6 +297,8 @@ export var App = function(name, version){
         self.meta.lineValues[name] = type
         self.meta.lineValuesOrder.push(name)
         self.data.addLineValuesToAllNodes(name)
+        
+        self.madeChange()
 
         return true
 
@@ -291,9 +311,36 @@ export var App = function(name, version){
         self.meta.lineValuesOrder.remove(name)
         // remove from all nodes
         self.data.removeLineValuesFromAllNodes(name)
-
-        console.log(self.meta.lineValues)
+ 
+        self.madeChange()
     }
 
+    this.madeChange = function(){    
+        // self.history.push(self.snapshot())
+        self.history.pushAndClearFuture(self.snapshot())
+    }
+
+    // deep copy all sets
+    this.snapshot = function(){
+        let s = []
+        self.allNodes().forEach(set => {
+            s.push(set.deepCopy())
+        })
+        return s
+    }
+
+    this.undo = function(){
+        let state = self.history.cycleSafe(-1)
+        if(state != undefined){
+            self.allNodes(state)
+        }
+    }
+
+    this.redo = function(){
+        let state = self.history.cycleSafe(1)
+        if(state != undefined){
+            self.allNodes(state)
+        }
+    }
     
 }
